@@ -54,6 +54,8 @@ from homeassistant.components.light import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
+from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import CONF_UNDERLYING_ENTITY_ID
 
@@ -111,6 +113,13 @@ class SignalLightCoordinator:
         # accent stack.
         self._signal_queue: list[dict[str, Any]] = []
 
+        # Re-apply effective state when the underlying light becomes available.
+        self._remove_underlying_listener = async_track_state_change_event(
+            hass,
+            [self.underlying_entity_id],
+            self._async_handle_underlying_state_change,
+        )
+
     # =========================================================================
     # Listener management
     # =========================================================================
@@ -137,6 +146,37 @@ class SignalLightCoordinator:
         """Invoke every registered listener callback."""
         for listener in self._listeners:
             listener()
+
+    async def async_shutdown(self) -> None:
+        """Release listeners owned by the coordinator."""
+        if self._remove_underlying_listener is not None:
+            self._remove_underlying_listener()
+            self._remove_underlying_listener = None
+
+    @callback
+    def _async_underlying_available(self) -> bool:
+        """Return True when the underlying light entity is available."""
+        state = self.hass.states.get(self.underlying_entity_id)
+        return bool(state and state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN))
+
+    @callback
+    def _async_handle_underlying_state_change(self, event) -> None:
+        """Re-apply effective state when the underlying light becomes available."""
+        old_state = event.data.get("old_state")
+        new_state = event.data.get("new_state")
+
+        old_available = bool(
+            old_state and old_state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN)
+        )
+        new_available = bool(
+            new_state and new_state.state not in (STATE_UNAVAILABLE, STATE_UNKNOWN)
+        )
+
+        # Keep entities in sync with changing underlying capabilities/availability.
+        self._async_notify_listeners()
+
+        if not old_available and new_available:
+            self.hass.async_create_task(self._async_apply_state())
 
     # =========================================================================
     # Base-layer access
@@ -370,6 +410,13 @@ class SignalLightCoordinator:
         into either a ``light.turn_on`` or ``light.turn_off`` service call on
         :attr:`underlying_entity_id`.
         """
+        if not self._async_underlying_available():
+            _LOGGER.debug(
+                "Skipping apply; underlying light %s is not available",
+                self.underlying_entity_id,
+            )
+            return
+
         on, attrs = self.get_effective_state()
 
         if on:

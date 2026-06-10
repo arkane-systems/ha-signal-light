@@ -213,6 +213,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     if unload_ok:
+        coordinator: SignalLightCoordinator = hass.data[DOMAIN][entry.entry_id][
+            DATA_COORDINATOR
+        ]
+        await coordinator.async_shutdown()
         hass.data[DOMAIN].pop(entry.entry_id, None)
 
     _LOGGER.debug("Signal Light entry unloaded: %s (ok=%s)", entry.entry_id, unload_ok)
