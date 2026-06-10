@@ -222,13 +222,6 @@ class SignalBaseLight(LightEntity, RestoreEntity):
     """
 
     _attr_should_poll = False  # Push-based; updates arrive via coordinator listener.
-
-    # Declare universal colour modes that are compatible with all light types.
-    # The color_mode property dynamically returns the actual mode based on
-    # what attributes are currently set. The underlying physical light may
-    # support only a subset, but we pass through whatever attrs the user
-    # supplies, so the actual capability is constrained only by that light.
-    _attr_supported_color_modes = {ColorMode.ONOFF, ColorMode.BRIGHTNESS}
     _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     def __init__(
@@ -269,10 +262,35 @@ class SignalBaseLight(LightEntity, RestoreEntity):
     async def async_added_to_hass(self) -> None:
         """Called when the entity is added to HA.
 
-        1. Restores the last-known base-layer state (if available).
-        2. Registers a listener with the coordinator so we're notified of
+        1. Queries the underlying light entity's supported color modes.
+        2. Restores the last-known base-layer state (if available).
+        3. Registers a listener with the coordinator so we're notified of
            external state changes (accent/signal layers changing).
         """
+        # Query the underlying light entity's supported color modes.
+        # If available, we'll support the same modes. Otherwise default to ONOFF.
+        underlying_entity = self.hass.states.get(self.coordinator.underlying_entity_id)
+        if underlying_entity:
+            supported_modes = underlying_entity.attributes.get("supported_color_modes")
+            if supported_modes:
+                # Convert string values to ColorMode enums
+                try:
+                    self._attr_supported_color_modes = {
+                        ColorMode(mode) for mode in supported_modes
+                    }
+                except (ValueError, KeyError):
+                    # Fallback if mode strings are invalid
+                    _LOGGER.warning(
+                        "Could not parse supported_color_modes from %s: %s",
+                        self.coordinator.underlying_entity_id,
+                        supported_modes,
+                    )
+                    self._attr_supported_color_modes = {ColorMode.ONOFF}
+            else:
+                self._attr_supported_color_modes = {ColorMode.ONOFF}
+        else:
+            self._attr_supported_color_modes = {ColorMode.ONOFF}
+
         # Restore state from the previous run.
         last_state = await self.async_get_last_state()
         if last_state is not None and last_state.state not in ("unavailable", "unknown"):
