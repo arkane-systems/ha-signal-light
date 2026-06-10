@@ -83,6 +83,18 @@ Entities register a callback with the coordinator in `async_added_to_hass` and d
 
 Every state mutation calls `_async_apply_state()` in the coordinator, which evaluates the effective state top-down and calls `light.turn_on()` or `light.turn_off()` on the underlying entity with `blocking=True` to ensure consistency.
 
+If the underlying entity is unavailable at startup, `_async_apply_state()` skips service calls and waits until the underlying light becomes available. The coordinator listens for that transition and re-applies the effective state automatically.
+
+Before calling `light.turn_on`, attributes are normalized so only one color descriptor is present at a time (`color_name`, `hs_color`, `rgb_color`, `rgbw_color`, `rgbww_color`, `xy_color`, or `color_temp_kelvin`).
+
+### Capability Mirroring
+
+`SignalBaseLight` mirrors capability metadata from the underlying light entity so its controls match the actual target:
+- `supported_color_modes`
+- `supported_features`
+- `effect_list`
+- `min_color_temp_kelvin` / `max_color_temp_kelvin`
+
 ### Entity IDs and Suffixes
 
 For a Signal Light named "Living Room", the integration creates:
@@ -108,7 +120,7 @@ Use `_LOGGER = logging.getLogger(__name__)` at module level. Log at DEBUG level 
 
 ### Validation
 
-Use `voluptuous` for schema validation. Schemas are defined at module level (not inline). Light-attribute validation is shared via `_LIGHT_ATTR_SCHEMA` dict in both `__init__.py` and `light.py`.
+Use `voluptuous` for schema validation. Schemas are defined at module level (not inline). Light-attribute validation is shared via `_LIGHT_ATTR_SCHEMA` dict in both `__init__.py` and `light.py`, including `color_name`.
 
 ### Async
 

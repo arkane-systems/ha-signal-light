@@ -416,6 +416,24 @@ the effective state top-down and calls `light.turn_on` or `light.turn_off` on
 the underlying entity.  The call is made with `blocking=True` to ensure the
 light state is consistent before listeners are notified.
 
+On startup, if the underlying light is not yet available, apply calls are
+deferred.  The coordinator listens for the underlying entity becoming available
+and re-applies the effective state once it comes online.
+
+Before any `turn_on` call, color descriptors are normalized so only one of
+`color_name`, `hs_color`, `rgb_color`, `rgbw_color`, `rgbww_color`, `xy_color`,
+or `color_temp_kelvin` is sent in the payload.
+
+### Capability mirroring
+
+The base-layer light mirrors capability metadata from the underlying light so
+UI controls stay aligned with the real hardware/group:
+
+* `supported_color_modes`
+* `supported_features`
+* `effect_list`
+* `min_color_temp_kelvin` / `max_color_temp_kelvin`
+
 ### Entity services
 
 The four `signal_light.*` services are registered as *entity services* on the
