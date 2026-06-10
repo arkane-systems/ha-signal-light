@@ -44,12 +44,29 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable
 
+from homeassistant.components.light import (
+    ATTR_COLOR_TEMP_KELVIN,
+    ATTR_HS_COLOR,
+    ATTR_RGB_COLOR,
+    ATTR_RGBW_COLOR,
+    ATTR_RGBWW_COLOR,
+    ATTR_XY_COLOR,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config_entries import ConfigEntry
 
 from .const import CONF_UNDERLYING_ENTITY_ID
 
 _LOGGER = logging.getLogger(__name__)
+
+_COLOR_DESCRIPTOR_ATTRS = (
+    ATTR_HS_COLOR,
+    ATTR_RGB_COLOR,
+    ATTR_RGBW_COLOR,
+    ATTR_RGBWW_COLOR,
+    ATTR_XY_COLOR,
+    ATTR_COLOR_TEMP_KELVIN,
+)
 
 
 class SignalLightCoordinator:
@@ -146,7 +163,13 @@ class SignalLightCoordinator:
             attrs: Light attribute kwargs (brightness, hs_color, …) as would
                    be passed to ``light.turn_on``.
         """
+        attrs = dict(attrs)
+        self._normalize_attrs(attrs)
+
         self._base_on = True
+        if any(attr in attrs for attr in _COLOR_DESCRIPTOR_ATTRS):
+            for attr in _COLOR_DESCRIPTOR_ATTRS:
+                self._base_attrs.pop(attr, None)
         self._base_attrs.update(attrs)
         _LOGGER.debug("Base layer on: %s", self._base_attrs)
         await self._async_apply_state()
@@ -191,6 +214,9 @@ class SignalLightCoordinator:
             priority: Integer priority; higher values take precedence.
             attrs:    Light attribute kwargs forwarded to ``light.turn_on``.
         """
+        attrs = dict(attrs)
+        self._normalize_attrs(attrs)
+
         # Replace existing entry with the same name, if any.
         self._accent_stack = [e for e in self._accent_stack if e["name"] != name]
         self._accent_stack.append({"name": name, "priority": priority, "attrs": attrs})
@@ -252,6 +278,9 @@ class SignalLightCoordinator:
             priority: Integer priority; higher values take precedence.
             attrs:    Light attribute kwargs forwarded to ``light.turn_on``.
         """
+        attrs = dict(attrs)
+        self._normalize_attrs(attrs)
+
         # Replace existing entry with the same name, if any.
         self._signal_queue = [e for e in self._signal_queue if e["name"] != name]
         self._signal_queue.append({"name": name, "priority": priority, "attrs": attrs})
@@ -315,6 +344,24 @@ class SignalLightCoordinator:
 
         # Fall back to the base layer.
         return self._base_on, dict(self._base_attrs)
+
+    @staticmethod
+    def _normalize_attrs(attrs: dict[str, Any]) -> None:
+        """Normalize light attrs to avoid conflicting color descriptors."""
+        present_color_attrs = [key for key in attrs if key in _COLOR_DESCRIPTOR_ATTRS]
+        if len(present_color_attrs) <= 1:
+            return
+
+        keep_attr = present_color_attrs[-1]
+        for attr in _COLOR_DESCRIPTOR_ATTRS:
+            if attr != keep_attr:
+                attrs.pop(attr, None)
+
+        _LOGGER.warning(
+            "Received multiple color descriptors %s; keeping %s",
+            present_color_attrs,
+            keep_attr,
+        )
 
     async def _async_apply_state(self) -> None:
         """Push the current effective state to the underlying physical light.
