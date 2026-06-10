@@ -197,6 +197,7 @@ clear).
 | `priority`       | integer | —        | 50      | Higher values take precedence              |
 | `brightness`     | integer | —        | —       | 0–255                                      |
 | `brightness_pct` | float   | —        | —       | 0–100 %                                    |
+| `color_name`     | string  | —        | —       | Named colour (e.g. `"red"`)                |
 | `hs_color`       | list    | —        | —       | `[hue, saturation]`                        |
 | `rgb_color`      | list    | —        | —       | `[r, g, b]`                                |
 | `color_temp_kelvin` | int  | —        | —       | Kelvin (1000–10000)                        |
@@ -227,6 +228,7 @@ Add or update an accent in the priority stack.
 | `priority`       | integer | —        | 50      | Higher values take precedence              |
 | `brightness`     | integer | —        | —       | 0–255                                      |
 | `brightness_pct` | float   | —        | —       | 0–100 %                                    |
+| `color_name`     | string  | —        | —       | Named colour (e.g. `"red"`)                |
 | `hs_color`       | list    | —        | —       | `[hue, saturation]`                        |
 | `rgb_color`      | list    | —        | —       | `[r, g, b]`                                |
 | `color_temp_kelvin` | int  | —        | —       | Kelvin (1000–10000)                        |

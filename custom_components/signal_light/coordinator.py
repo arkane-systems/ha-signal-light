@@ -45,6 +45,7 @@ import logging
 from typing import Any, Callable
 
 from homeassistant.components.light import (
+    ATTR_COLOR_NAME,
     ATTR_COLOR_TEMP_KELVIN,
     ATTR_HS_COLOR,
     ATTR_RGB_COLOR,
@@ -62,6 +63,7 @@ from .const import CONF_UNDERLYING_ENTITY_ID
 _LOGGER = logging.getLogger(__name__)
 
 _COLOR_DESCRIPTOR_ATTRS = (
+    ATTR_COLOR_NAME,
     ATTR_HS_COLOR,
     ATTR_RGB_COLOR,
     ATTR_RGBW_COLOR,

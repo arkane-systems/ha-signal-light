@@ -76,6 +76,12 @@ set_signal:
       example: "[255, 0, 128]"
       selector:
         object:
+    color_name:
+      name: Named colour
+      description: CSS3-like color name (for example "red", "deepskyblue").
+      required: false
+      selector:
+        text:
     effect:
       name: Effect
       description: Named light effect (e.g. "colorloop").
@@ -178,6 +184,12 @@ set_accent:
       example: "[255, 0, 128]"
       selector:
         object:
+    color_name:
+      name: Named colour
+      description: CSS3-like color name (for example "red", "deepskyblue").
+      required: false
+      selector:
+        text:
     effect:
       name: Effect
       description: Named light effect.

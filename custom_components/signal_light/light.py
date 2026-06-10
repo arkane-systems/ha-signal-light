@@ -39,6 +39,7 @@ import voluptuous as vol
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_BRIGHTNESS_PCT,
+    ATTR_COLOR_NAME,
     ATTR_COLOR_TEMP_KELVIN,
     ATTR_EFFECT,
     ATTR_HS_COLOR,
@@ -81,6 +82,7 @@ _LOGGER = logging.getLogger(__name__)
 _LIGHT_ATTR_SCHEMA = {
     vol.Optional(ATTR_BRIGHTNESS):        vol.All(vol.Coerce(int), vol.Range(min=0, max=255)),
     vol.Optional(ATTR_BRIGHTNESS_PCT):    vol.All(vol.Coerce(float), vol.Range(min=0, max=100)),
+    vol.Optional(ATTR_COLOR_NAME):        cv.string,
     vol.Optional(ATTR_COLOR_TEMP_KELVIN): vol.All(vol.Coerce(int), vol.Range(min=1000, max=10000)),
     vol.Optional(ATTR_HS_COLOR): vol.All(
         list,
