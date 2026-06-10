@@ -1,4 +1,4 @@
-# Signal Light — Home Assistant Integration
+# ![icon](assets/ha-signal-light-32x32.png) Signal Light — Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
