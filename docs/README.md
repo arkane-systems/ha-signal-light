@@ -31,7 +31,7 @@ the topmost non-empty layer controls the physical light.
 ┌───────────────────────────────────────────────────────────┐
 │  SIGNAL LAYER  (highest priority)                         │
 │  Priority queue of named signals.                         │
-│  Highest-priority signal controls the light.             │
+│  Highest-priority signal controls the light.              │
 │  When cleared, next signal takes over (or falls through). │
 ├───────────────────────────────────────────────────────────┤
 │  ACCENT LAYER  (medium priority)                          │
