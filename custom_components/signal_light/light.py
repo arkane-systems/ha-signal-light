@@ -49,7 +49,6 @@ from homeassistant.components.light import (
     ATTR_XY_COLOR,
     ColorMode,
     LightEntity,
-    LightEntityFeature,
     valid_supported_color_modes,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -224,7 +223,6 @@ class SignalBaseLight(LightEntity, RestoreEntity):
     """
 
     _attr_should_poll = False  # Push-based; updates arrive via coordinator listener.
-    _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     def __init__(
         self,
@@ -259,14 +257,49 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         # De-registration callable returned by async_add_listener.
         self._remove_listener: Any = None
 
+        # Mirrored capability metadata from the underlying light entity.
+        self._underlying_effect_list: list[str] | None = None
+        self._underlying_min_color_temp_kelvin: int | None = None
+        self._underlying_max_color_temp_kelvin: int | None = None
+
         # Must be set before the entity is added; HA validates capabilities
         # during add_entity, before async_added_to_hass runs.
         self._attr_supported_color_modes = {ColorMode.ONOFF}
-        self._sync_supported_color_modes_from_underlying()
+        self._attr_supported_features = 0
+        self._sync_capabilities_from_underlying()
 
-    def _sync_supported_color_modes_from_underlying(self) -> None:
+    def _sync_capabilities_from_underlying(self) -> None:
+        """Mirror capability metadata from the underlying light when available."""
+        underlying_entity = self.coordinator.hass.states.get(
+            self.coordinator.underlying_entity_id
+        )
+        self._sync_supported_color_modes_from_underlying(underlying_entity)
+
+        if underlying_entity is None:
+            self._attr_supported_features = 0
+            self._underlying_effect_list = None
+            self._underlying_min_color_temp_kelvin = None
+            self._underlying_max_color_temp_kelvin = None
+            return
+
+        self._attr_supported_features = int(
+            underlying_entity.attributes.get("supported_features", 0)
+        )
+        raw_effect_list = underlying_entity.attributes.get("effect_list")
+        self._underlying_effect_list = (
+            [str(effect) for effect in raw_effect_list]
+            if isinstance(raw_effect_list, list)
+            else None
+        )
+        self._underlying_min_color_temp_kelvin = underlying_entity.attributes.get(
+            "min_color_temp_kelvin"
+        )
+        self._underlying_max_color_temp_kelvin = underlying_entity.attributes.get(
+            "max_color_temp_kelvin"
+        )
+
+    def _sync_supported_color_modes_from_underlying(self, underlying_entity) -> None:
         """Mirror supported color modes from the underlying light when available."""
-        underlying_entity = self.coordinator.hass.states.get(self.coordinator.underlying_entity_id)
         if underlying_entity is None:
             self._attr_supported_color_modes = {ColorMode.ONOFF}
             return
@@ -362,7 +395,7 @@ class SignalBaseLight(LightEntity, RestoreEntity):
 
         Schedules a state write so HA sees the updated entity state.
         """
-        self._sync_supported_color_modes_from_underlying()
+        self._sync_capabilities_from_underlying()
         self.async_write_ha_state()
 
     # ── LightEntity state properties ──────────────────────────────────────────
@@ -445,6 +478,21 @@ class SignalBaseLight(LightEntity, RestoreEntity):
     def effect(self) -> str | None:
         """Return the base layer effect name, or None."""
         return self.coordinator.base_attrs.get(ATTR_EFFECT)
+
+    @property
+    def effect_list(self) -> list[str] | None:
+        """Return available effects from the underlying light, if any."""
+        return self._underlying_effect_list
+
+    @property
+    def min_color_temp_kelvin(self) -> int | None:
+        """Return minimum supported color temperature (Kelvin), if available."""
+        return self._underlying_min_color_temp_kelvin
+
+    @property
+    def max_color_temp_kelvin(self) -> int | None:
+        """Return maximum supported color temperature (Kelvin), if available."""
+        return self._underlying_max_color_temp_kelvin
 
     # ── LightEntity turn on/off ────────────────────────────────────────────────
 
