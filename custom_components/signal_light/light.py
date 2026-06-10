@@ -50,9 +50,11 @@ from homeassistant.components.light import (
     ColorMode,
     LightEntity,
     LightEntityFeature,
+    valid_supported_color_modes,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -257,40 +259,65 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         # De-registration callable returned by async_add_listener.
         self._remove_listener: Any = None
 
+        # Must be set before the entity is added; HA validates capabilities
+        # during add_entity, before async_added_to_hass runs.
+        self._attr_supported_color_modes = {ColorMode.ONOFF}
+        self._sync_supported_color_modes_from_underlying()
+
+    def _sync_supported_color_modes_from_underlying(self) -> None:
+        """Mirror supported color modes from the underlying light when available."""
+        underlying_entity = self.coordinator.hass.states.get(self.coordinator.underlying_entity_id)
+        if underlying_entity is None:
+            self._attr_supported_color_modes = {ColorMode.ONOFF}
+            return
+
+        raw_modes = underlying_entity.attributes.get("supported_color_modes")
+        if not raw_modes:
+            self._attr_supported_color_modes = {ColorMode.ONOFF}
+            return
+
+        try:
+            modes = {ColorMode(mode) for mode in raw_modes}
+        except ValueError:
+            _LOGGER.warning(
+                "Could not parse supported_color_modes from %s: %s",
+                self.coordinator.underlying_entity_id,
+                raw_modes,
+            )
+            self._attr_supported_color_modes = {ColorMode.ONOFF}
+            return
+
+        # Some integrations may expose combinations HA rejects. Normalize toward
+        # modern semantics where ONOFF/BRIGHTNESS are standalone modes.
+        if len(modes) > 1:
+            modes.discard(ColorMode.ONOFF)
+            modes.discard(ColorMode.BRIGHTNESS)
+
+        if not modes:
+            modes = {ColorMode.ONOFF}
+
+        try:
+            valid_supported_color_modes(modes)
+        except (HomeAssistantError, ValueError):
+            _LOGGER.warning(
+                "Underlying light %s exposed invalid supported_color_modes %s; "
+                "falling back to on/off.",
+                self.coordinator.underlying_entity_id,
+                sorted(str(mode) for mode in modes),
+            )
+            modes = {ColorMode.ONOFF}
+
+        self._attr_supported_color_modes = modes
+
     # ── HA lifecycle ──────────────────────────────────────────────────────────
 
     async def async_added_to_hass(self) -> None:
         """Called when the entity is added to HA.
 
-        1. Queries the underlying light entity's supported color modes.
-        2. Restores the last-known base-layer state (if available).
-        3. Registers a listener with the coordinator so we're notified of
+        1. Restores the last-known base-layer state (if available).
+        2. Registers a listener with the coordinator so we're notified of
            external state changes (accent/signal layers changing).
         """
-        # Query the underlying light entity's supported color modes.
-        # If available, we'll support the same modes. Otherwise default to ONOFF.
-        underlying_entity = self.hass.states.get(self.coordinator.underlying_entity_id)
-        if underlying_entity:
-            supported_modes = underlying_entity.attributes.get("supported_color_modes")
-            if supported_modes:
-                # Convert string values to ColorMode enums
-                try:
-                    self._attr_supported_color_modes = {
-                        ColorMode(mode) for mode in supported_modes
-                    }
-                except (ValueError, KeyError):
-                    # Fallback if mode strings are invalid
-                    _LOGGER.warning(
-                        "Could not parse supported_color_modes from %s: %s",
-                        self.coordinator.underlying_entity_id,
-                        supported_modes,
-                    )
-                    self._attr_supported_color_modes = {ColorMode.ONOFF}
-            else:
-                self._attr_supported_color_modes = {ColorMode.ONOFF}
-        else:
-            self._attr_supported_color_modes = {ColorMode.ONOFF}
-
         # Restore state from the previous run.
         last_state = await self.async_get_last_state()
         if last_state is not None and last_state.state not in ("unavailable", "unknown"):
@@ -335,6 +362,7 @@ class SignalBaseLight(LightEntity, RestoreEntity):
 
         Schedules a state write so HA sees the updated entity state.
         """
+        self._sync_supported_color_modes_from_underlying()
         self.async_write_ha_state()
 
     # ── LightEntity state properties ──────────────────────────────────────────
@@ -358,21 +386,30 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         when no colour info has been set.
         """
         attrs = self.coordinator.base_attrs
+        inferred = ColorMode.ONOFF
         if ATTR_HS_COLOR in attrs:
-            return ColorMode.HS
-        if ATTR_RGB_COLOR in attrs:
-            return ColorMode.RGB
-        if ATTR_RGBW_COLOR in attrs:
-            return ColorMode.RGBW
-        if ATTR_RGBWW_COLOR in attrs:
-            return ColorMode.RGBWW
-        if ATTR_XY_COLOR in attrs:
-            return ColorMode.XY
-        if ATTR_COLOR_TEMP_KELVIN in attrs:
-            return ColorMode.COLOR_TEMP
-        if ATTR_BRIGHTNESS in attrs:
+            inferred = ColorMode.HS
+        elif ATTR_RGB_COLOR in attrs:
+            inferred = ColorMode.RGB
+        elif ATTR_RGBW_COLOR in attrs:
+            inferred = ColorMode.RGBW
+        elif ATTR_RGBWW_COLOR in attrs:
+            inferred = ColorMode.RGBWW
+        elif ATTR_XY_COLOR in attrs:
+            inferred = ColorMode.XY
+        elif ATTR_COLOR_TEMP_KELVIN in attrs:
+            inferred = ColorMode.COLOR_TEMP
+        elif ATTR_BRIGHTNESS in attrs:
+            inferred = ColorMode.BRIGHTNESS
+
+        supported = self.supported_color_modes or {ColorMode.ONOFF}
+        if inferred in supported:
+            return inferred
+        if ColorMode.BRIGHTNESS in supported and ATTR_BRIGHTNESS in attrs:
             return ColorMode.BRIGHTNESS
-        return ColorMode.ONOFF
+        if ColorMode.ONOFF in supported:
+            return ColorMode.ONOFF
+        return next(iter(supported))
 
     @property
     def hs_color(self) -> tuple[float, float] | None:
