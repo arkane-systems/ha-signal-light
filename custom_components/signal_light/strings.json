@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Signal Light",
+        "description": "Configure a new Signal Light instance that will manage a physical light entity using a three-layer priority model (base / accent / signal).",
+        "data": {
+          "name": "Name",
+          "underlying_entity_id": "Underlying light entity"
+        },
+        "data_description": {
+          "name": "A friendly name for this signal light instance (e.g. 'Living Room Signal Light').",
+          "underlying_entity_id": "The light entity that Signal Light will control."
+        }
+      }
+    },
+    "error": {
+      "entity_not_found": "The selected entity was not found. Please choose a valid light entity.",
+      "already_configured": "This light entity is already managed by another Signal Light instance."
+    },
+    "abort": {
+      "already_configured": "This light entity is already configured."
+    }
+  }
+}

@@ -1,0 +1,213 @@
+# Signal Light — Service Definitions
+#
+# These services are available once at least one Signal Light instance has
+# been configured.  They are entity services, meaning each call must target a
+# specific Signal Light base-layer light entity (or device) so that HA routes
+# the call to the correct coordinator.
+#
+# All colour/brightness parameters mirror the standard light.turn_on kwargs.
+
+set_signal:
+  name: Set Signal
+  description: >
+    Add a named signal to the signal priority queue.  The signal with the
+    highest priority overrides all other layers and controls the physical
+    light.  If a signal with the same name already exists, it is updated.
+  target:
+    entity:
+      integration: signal_light
+      domain: light
+  fields:
+    signal_name:
+      name: Signal name
+      description: >
+        A unique name identifying this signal within the Signal Light instance.
+        Use the same name to update or later remove this signal.
+      required: true
+      selector:
+        text:
+    priority:
+      name: Priority
+      description: >
+        Integer priority value.  Higher values take precedence over lower ones.
+        Signals with equal priorities are ordered by insertion time.
+      required: false
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 1000
+          mode: box
+    brightness:
+      name: Brightness
+      description: Brightness level (0–255).
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 255
+    brightness_pct:
+      name: Brightness (%)
+      description: Brightness as a percentage (0–100).  Takes precedence over brightness.
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    color_temp_kelvin:
+      name: Colour temperature (K)
+      description: Colour temperature in Kelvin (1000–10000).
+      required: false
+      selector:
+        color_temp:
+          unit: kelvin
+    hs_color:
+      name: Hue/Saturation colour
+      description: Hue (0–360) and saturation (0–100) as a two-element list.
+      required: false
+      example: "[120, 100]"
+      selector:
+        object:
+    rgb_color:
+      name: RGB colour
+      description: Red, green, blue values (0–255 each) as a three-element list.
+      required: false
+      example: "[255, 0, 128]"
+      selector:
+        object:
+    effect:
+      name: Effect
+      description: Named light effect (e.g. "colorloop").
+      required: false
+      selector:
+        text:
+    transition:
+      name: Transition
+      description: Transition time in seconds.
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: s
+
+clear_signal:
+  name: Clear Signal
+  description: >
+    Remove a named signal from the signal priority queue.  If the cleared
+    signal was active, the next highest-priority signal (if any) takes over;
+    otherwise control returns to the accent or base layer.
+  target:
+    entity:
+      integration: signal_light
+      domain: light
+  fields:
+    signal_name:
+      name: Signal name
+      description: The name of the signal to remove.
+      required: true
+      selector:
+        text:
+
+set_accent:
+  name: Set Accent
+  description: >
+    Add a named accent to the accent priority stack.  The accent with the
+    highest priority controls the physical light when no signal is active.
+    If an accent with the same name already exists, it is updated.
+  target:
+    entity:
+      integration: signal_light
+      domain: light
+  fields:
+    accent_name:
+      name: Accent name
+      description: >
+        A unique name identifying this accent within the Signal Light instance.
+        Use the same name to update or later remove this accent.
+      required: true
+      selector:
+        text:
+    priority:
+      name: Priority
+      description: >
+        Integer priority value.  Higher values take precedence over lower ones.
+      required: false
+      default: 50
+      selector:
+        number:
+          min: 1
+          max: 1000
+          mode: box
+    brightness:
+      name: Brightness
+      description: Brightness level (0–255).
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 255
+    brightness_pct:
+      name: Brightness (%)
+      description: Brightness as a percentage (0–100).
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 100
+          unit_of_measurement: "%"
+    color_temp_kelvin:
+      name: Colour temperature (K)
+      description: Colour temperature in Kelvin (1000–10000).
+      required: false
+      selector:
+        color_temp:
+          unit: kelvin
+    hs_color:
+      name: Hue/Saturation colour
+      description: Hue (0–360) and saturation (0–100) as a two-element list.
+      required: false
+      example: "[120, 100]"
+      selector:
+        object:
+    rgb_color:
+      name: RGB colour
+      description: Red, green, blue values (0–255 each) as a three-element list.
+      required: false
+      example: "[255, 0, 128]"
+      selector:
+        object:
+    effect:
+      name: Effect
+      description: Named light effect.
+      required: false
+      selector:
+        text:
+    transition:
+      name: Transition
+      description: Transition time in seconds.
+      required: false
+      selector:
+        number:
+          min: 0
+          max: 300
+          unit_of_measurement: s
+
+clear_accent:
+  name: Clear Accent
+  description: >
+    Remove a named accent from the accent priority stack.  If the cleared
+    accent was active, the next highest-priority accent (if any) takes over;
+    otherwise control returns to the base layer.
+  target:
+    entity:
+      integration: signal_light
+      domain: light
+  fields:
+    accent_name:
+      name: Accent name
+      description: The name of the accent to remove.
+      required: true
+      selector:
+        text:
