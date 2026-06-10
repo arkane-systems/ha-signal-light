@@ -50,6 +50,7 @@ from homeassistant.components.light import (
     ATTR_XY_COLOR,
     ColorMode,
     LightEntity,
+    LightEntityFeature,
     valid_supported_color_modes,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -267,7 +268,7 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         # Must be set before the entity is added; HA validates capabilities
         # during add_entity, before async_added_to_hass runs.
         self._attr_supported_color_modes = {ColorMode.ONOFF}
-        self._attr_supported_features = 0
+        self._attr_supported_features = LightEntityFeature(0)
         self._sync_capabilities_from_underlying()
 
     def _sync_capabilities_from_underlying(self) -> None:
@@ -278,13 +279,13 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         self._sync_supported_color_modes_from_underlying(underlying_entity)
 
         if underlying_entity is None:
-            self._attr_supported_features = 0
+            self._attr_supported_features = LightEntityFeature(0)
             self._underlying_effect_list = None
             self._underlying_min_color_temp_kelvin = None
             self._underlying_max_color_temp_kelvin = None
             return
 
-        self._attr_supported_features = int(
+        self._attr_supported_features = LightEntityFeature(
             underlying_entity.attributes.get("supported_features", 0)
         )
         raw_effect_list = underlying_entity.attributes.get("effect_list")
