@@ -223,19 +223,12 @@ class SignalBaseLight(LightEntity, RestoreEntity):
 
     _attr_should_poll = False  # Push-based; updates arrive via coordinator listener.
 
-    # Declare that we support the full range of standard colour modes.
-    # The underlying physical light may support only a subset, but we pass
-    # through whatever attrs the user supplies, so we don't constrain here.
-    _attr_supported_color_modes = {
-        ColorMode.ONOFF,
-        ColorMode.BRIGHTNESS,
-        ColorMode.COLOR_TEMP,
-        ColorMode.HS,
-        ColorMode.RGB,
-        ColorMode.RGBW,
-        ColorMode.RGBWW,
-        ColorMode.XY,
-    }
+    # Declare universal colour modes that are compatible with all light types.
+    # The color_mode property dynamically returns the actual mode based on
+    # what attributes are currently set. The underlying physical light may
+    # support only a subset, but we pass through whatever attrs the user
+    # supplies, so the actual capability is constrained only by that light.
+    _attr_supported_color_modes = {ColorMode.ONOFF, ColorMode.BRIGHTNESS}
     _attr_supported_features = LightEntityFeature.EFFECT | LightEntityFeature.TRANSITION
 
     def __init__(
