@@ -74,7 +74,8 @@ Accents are long-lived overrides — for example:
 
 Multiple accents can coexist.  The one with the **highest priority** controls
 the light.  When you clear `party`, `movie_mode` (if still present) takes over
-immediately — no extra automation needed.
+immediately — no extra automation needed.  If the base light is off, accents are
+still tracked but they will not turn the physical light on by themselves.
 
 Accents are added/removed via the `signal_light.set_accent` and
 `signal_light.clear_accent` services.
@@ -91,7 +92,9 @@ Signals are short-lived notifications — for example:
 
 The highest-priority active signal overrides the accent and base layers.  When
 it is cleared (e.g. the user acknowledges the doorbell) the next signal (if
-any) takes over, or the accent/base layer resumes.
+any) takes over, or the accent/base layer resumes.  If the base light is off,
+signals remain queued and only turn the light on when their priority is greater
+than the configured signal wake priority.
 
 Signals are added/removed via the `signal_light.set_signal` and
 `signal_light.clear_signal` services.
@@ -124,6 +127,8 @@ Signals are added/removed via the `signal_light.set_signal` and
    - **Name** — a label for this instance (e.g. "Living Room Signal Light").
    - **Underlying light entity** — the `light.*` entity that Signal Light will
      control (may be a light group).
+   - **Signal wake priority** — signals must have a priority greater than this
+     value to turn the light on while the base layer is off.
 4. Click **Submit**.
 
 You can create multiple Signal Light instances — one per physical light or
@@ -416,7 +421,10 @@ triggers).  This avoids stale signals lingering after a restart.
 Every time any layer changes, `_async_apply_state()` is called.  It evaluates
 the effective state top-down and calls `light.turn_on` or `light.turn_off` on
 the underlying entity.  The call is made with `blocking=True` to ensure the
-light state is consistent before listeners are notified.
+light state is consistent before listeners are notified.  When the base layer is
+off, accents never wake the light and only signals above the configured wake
+priority may do so; queued accents/signals still take effect immediately once
+the base layer is turned back on.
 
 On startup, if the underlying light is not yet available, apply calls are
 deferred.  The coordinator listens for the underlying entity becoming available
