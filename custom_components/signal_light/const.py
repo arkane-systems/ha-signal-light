@@ -19,6 +19,10 @@ PLATFORMS = ["light", "sensor"]
 # signal-light instance will control.
 CONF_UNDERLYING_ENTITY_ID = "underlying_entity_id"
 
+# Minimum signal priority required to wake the physical light while the base
+# layer is off. Signals must exceed this value to turn the light on.
+CONF_SIGNAL_WAKE_PRIORITY = "signal_wake_priority"
+
 # ── hass.data keys ─────────────────────────────────────────────────────────────
 
 # Under hass.data[DOMAIN][config_entry.entry_id] we store the coordinator.
@@ -63,3 +67,7 @@ SENSOR_ACCENT_STACK = "accent_stack"
 
 # Priority used when the caller does not supply one explicitly.
 DEFAULT_PRIORITY = 50
+
+# Signals must have a priority greater than this to wake the light while the
+# base layer is off.
+DEFAULT_SIGNAL_WAKE_PRIORITY = 50

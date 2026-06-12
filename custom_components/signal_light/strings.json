@@ -6,10 +6,12 @@
         "description": "Configure a new Signal Light instance that will manage a physical light entity using a three-layer priority model (base / accent / signal).",
         "data": {
           "name": "Name",
+          "signal_wake_priority": "Signal wake priority",
           "underlying_entity_id": "Underlying light entity"
         },
         "data_description": {
           "name": "A friendly name for this signal light instance (e.g. 'Living Room Signal Light').",
+          "signal_wake_priority": "Signals must have a priority greater than this value to turn the light on while the base layer is off.",
           "underlying_entity_id": "The light entity that Signal Light will control."
         }
       }
