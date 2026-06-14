@@ -70,4 +70,4 @@ DEFAULT_PRIORITY = 50
 
 # Signals must have a priority greater than this to wake the light while the
 # base layer is off.
-DEFAULT_SIGNAL_WAKE_PRIORITY = 50
+DEFAULT_SIGNAL_WAKE_PRIORITY = 5000
