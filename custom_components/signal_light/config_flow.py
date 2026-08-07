@@ -1,7 +1,7 @@
 """Config flow for the Accent & Signal Light integration.
 
 Guides the user through adding a new instance via the HA integrations UI.
-The flow collects two pieces of information:
+The flow collects three pieces of information:
 
 1. **Name** — a human-readable label for this instance (e.g. "Living Room
    Accent & Signal Light").  Defaults to the domain name; the user is free
@@ -9,6 +9,9 @@ The flow collects two pieces of information:
 
 2. **Underlying light entity** — the ``entity_id`` of the physical light (or
    light group) that this instance will control.
+
+3. **Signal wake priority** — the minimum priority a signal must exceed to turn
+   the light on while the base layer is off.
 
 Validation
 ----------
@@ -31,7 +34,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 import homeassistant.helpers.config_validation as cv
 
-from .const import CONF_UNDERLYING_ENTITY_ID, DOMAIN
+from .const import (
+    CONF_SIGNAL_WAKE_PRIORITY,
+    CONF_UNDERLYING_ENTITY_ID,
+    DEFAULT_SIGNAL_WAKE_PRIORITY,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,8 +70,8 @@ def _existing_underlying_ids(hass: HomeAssistant) -> set[str]:
 class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Accent & Signal Light.
 
-    Presents a single form that collects the name and underlying entity_id,
-    then creates the config entry.
+    Presents a single form that collects the name, underlying entity_id, and
+    signal wake priority, then creates the config entry.
     """
 
     VERSION = 1
@@ -114,7 +122,12 @@ class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
                 return self.async_create_entry(
                     title=user_input.get("name") or entity_id,
-                    data={CONF_UNDERLYING_ENTITY_ID: entity_id},
+                    data={
+                        CONF_UNDERLYING_ENTITY_ID: entity_id,
+                        CONF_SIGNAL_WAKE_PRIORITY: user_input[
+                            CONF_SIGNAL_WAKE_PRIORITY
+                        ],
+                    },
                 )
 
         # ── Build the form schema ─────────────────────────────────────────────
@@ -122,6 +135,10 @@ class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Optional("name", default=""): cv.string,
+                vol.Optional(
+                    CONF_SIGNAL_WAKE_PRIORITY,
+                    default=DEFAULT_SIGNAL_WAKE_PRIORITY,
+                ): vol.All(vol.Coerce(int), vol.Range(min=0)),
                 vol.Required(CONF_UNDERLYING_ENTITY_ID): vol.In(light_entity_ids)
                 if light_entity_ids
                 else cv.string,

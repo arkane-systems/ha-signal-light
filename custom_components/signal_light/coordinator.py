@@ -14,14 +14,15 @@ three-layer light model and is responsible for:
 Layer hierarchy (highest priority first)
 -----------------------------------------
 1. **Signal layer** — a priority-sorted list of named signals.  The signal with
-   the highest priority controls the light.  When it is canceled the next
-   highest-priority signal takes over; if the queue is empty, control falls
-   through to the accent layer.
+   the highest priority controls the light.  When the base layer is off, only
+   signals above the configured wake threshold may turn the physical light on.
+   When a signal is canceled the next highest-priority signal takes over; if
+   the queue is empty, control falls through to the accent layer.
 
 2. **Accent layer** — a priority-sorted list of named accents.  The accent with
-   the highest priority controls the light when no signal is active.  When it
-   is removed the next highest-priority accent takes over; if the stack is
-   empty, control falls through to the base layer.
+   the highest priority controls the light when no signal is active and the
+   base layer is on.  When it is removed the next highest-priority accent takes
+   over; if the stack is empty, control falls through to the base layer.
 
 3. **Base layer** — the default light state.  This is the state that was most
    recently applied via the base-layer :class:`~signal_light.light.SignalBaseLight`
@@ -58,7 +59,11 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.helpers.event import async_track_state_change_event
 
-from .const import CONF_UNDERLYING_ENTITY_ID
+from .const import (
+    CONF_SIGNAL_WAKE_PRIORITY,
+    CONF_UNDERLYING_ENTITY_ID,
+    DEFAULT_SIGNAL_WAKE_PRIORITY,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -193,6 +198,15 @@ class SignalLightCoordinator:
     def base_attrs(self) -> dict[str, Any]:
         """A copy of the base layer's current light attributes."""
         return dict(self._base_attrs)
+
+    @property
+    def signal_wake_priority(self) -> int:
+        """Return the wake threshold used while the base layer is off."""
+        return int(
+            self.config_entry.data.get(
+                CONF_SIGNAL_WAKE_PRIORITY, DEFAULT_SIGNAL_WAKE_PRIORITY
+            )
+        )
 
     async def async_set_base_on(self, attrs: dict[str, Any]) -> None:
         """Turn the base layer on with *attrs* as light parameters.
@@ -366,10 +380,12 @@ class SignalLightCoordinator:
     def get_effective_state(self) -> tuple[bool, dict[str, Any]]:
         """Compute the effective light state by evaluating layers top-down.
 
-        Evaluation order (first non-empty layer wins):
+        Evaluation order:
 
-        1. Signal queue  — highest-priority signal's attrs.
-        2. Accent stack  — highest-priority accent's attrs.
+        1. Signal queue  — highest-priority signal's attrs when the base layer
+           is on, or when that signal's priority exceeds the wake threshold.
+        2. Accent stack  — highest-priority accent's attrs when the base layer
+           is on.
         3. Base layer    — ``(_base_on, _base_attrs)``.
 
         Returns:
@@ -377,11 +393,11 @@ class SignalLightCoordinator:
             should be on, and *attrs* is the dict of light parameters.
         """
         if self._signal_queue:
-            # Signals override everything.
-            return True, dict(self._signal_queue[0]["attrs"])
+            active_signal = self._signal_queue[0]
+            if self._base_on or active_signal["priority"] > self.signal_wake_priority:
+                return True, dict(active_signal["attrs"])
 
-        if self._accent_stack:
-            # Accents override the base layer.
+        if self._base_on and self._accent_stack:
             return True, dict(self._accent_stack[0]["attrs"])
 
         # Fall back to the base layer.

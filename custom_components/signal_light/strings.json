@@ -6,10 +6,12 @@
         "description": "Configure a new Accent & Signal Light instance that will manage a physical light entity using a three-layer priority model (base / accent / signal).",
         "data": {
           "name": "Name",
+          "signal_wake_priority": "Signal wake priority",
           "underlying_entity_id": "Underlying light entity"
         },
         "data_description": {
           "name": "A friendly name for this instance (e.g. 'Living Room Accent & Signal Light').",
+          "signal_wake_priority": "Signals must have a priority greater than this value to turn the light on while the base layer is off.",
           "underlying_entity_id": "The light entity that Accent & Signal Light will control."
         }
       }
