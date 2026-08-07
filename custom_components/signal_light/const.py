@@ -1,4 +1,4 @@
-"""Constants for the Signal Light integration.
+"""Constants for the Accent & Signal Light integration.
 
 All string literals that appear in more than one place, or that carry semantic
 meaning beyond a plain dictionary key, are centralised here so that they can be

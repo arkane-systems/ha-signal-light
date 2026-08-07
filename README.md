@@ -1,11 +1,11 @@
-# ![icon](assets/ha-signal-light-32x32.png) Signal Light — Home Assistant Integration
+# ![icon](assets/ha-accent-signal-light-32x32.png) Accent & Signal Light — Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
-**Signal Light** is a Home Assistant custom integration that lets you manage
+**Accent & Signal Light** is a Home Assistant custom integration that lets you manage
 accent and notification lights without writing complex bookkeeping automations.
 Instead of tracking "which automation last changed the colour of my lamp" across
-dozens of rules, Signal Light gives every use-case its own named slot in a
+dozens of rules, Accent & Signal Light gives every use-case its own named slot in a
 priority-sorted stack or queue.  When a slot is cleared the light automatically
 reverts to the next lower layer — zero cleanup automation required.
 
@@ -25,7 +25,7 @@ reverts to the next lower layer — zero cleanup automation required.
 
 ## 1. Concepts — the three-layer model
 
-Signal Light wraps a single physical light entity (or light group) in a
+Accent & Signal Light wraps a single physical light entity (or light group) in a
 **three-layer priority model**.  Layers are evaluated from highest to lowest;
 the topmost non-empty layer controls the physical light.
 
@@ -103,9 +103,9 @@ Signals are added/removed via the `signal_light.set_signal` and
 ### HACS (recommended)
 
 1. Open **HACS → Integrations → ⋮ → Custom repositories**.
-2. Add `https://github.com/arkane-systems/ha-signal-light` as an
+2. Add `https://github.com/arkane-systems/ha-accent-signal-light` as an
    **Integration** repository.
-3. Search for **Signal Light** and click **Download**.
+3. Search for **Accent & Signal Light** and click **Download**.
 4. Restart Home Assistant.
 
 ### Manual
@@ -119,21 +119,21 @@ Signals are added/removed via the `signal_light.set_signal` and
 ## 3. Configuration
 
 1. Go to **Settings → Devices & Services → Add Integration**.
-2. Search for **Signal Light** and click it.
+2. Search for **Accent & Signal Light** and click it.
 3. Fill in the form:
-   - **Name** — a label for this instance (e.g. "Living Room Signal Light").
-   - **Underlying light entity** — the `light.*` entity that Signal Light will
+   - **Name** — a label for this instance (e.g. "Living Room Accent & Signal Light").
+   - **Underlying light entity** — the `light.*` entity that Accent & Signal Light will
      control (may be a light group).
 4. Click **Submit**.
 
-You can create multiple Signal Light instances — one per physical light or
+You can create multiple Accent & Signal Light instances — one per physical light or
 group you want to manage this way.
 
 ---
 
 ## 4. Entities created
 
-Each Signal Light instance creates **five entities**, all grouped under a
+Each Accent & Signal Light instance creates **five entities**, all grouped under a
 single HA device named after the instance.
 
 | Entity type | Name suffix       | Description                                      |
@@ -371,7 +371,7 @@ active at a glance:
 
 ```yaml
 type: entities
-title: Living Room Signal Light
+title: Living Room Accent & Signal Light
 entities:
   - entity: light.living_room_signal_light_base
   - entity: sensor.living_room_signal_light_active_signal

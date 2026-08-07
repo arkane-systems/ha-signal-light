@@ -1,9 +1,9 @@
-# Signal Light — Service Definitions
+# Accent & Signal Light — Service Definitions
 #
-# These services are available once at least one Signal Light instance has
-# been configured.  They are entity services, meaning each call must target a
-# specific Signal Light base-layer light entity (or device) so that HA routes
-# the call to the correct coordinator.
+# These services are available once at least one Accent & Signal Light
+# instance has been configured.  They are entity services, meaning each call
+# must target a specific base-layer light entity (or device) so that HA
+# routes the call to the correct coordinator.
 #
 # All colour/brightness parameters mirror the standard light.turn_on kwargs.
 
@@ -21,7 +21,7 @@ set_signal:
     signal_name:
       name: Signal name
       description: >
-        A unique name identifying this signal within the Signal Light instance.
+        A unique name identifying this signal within the instance.
         Use the same name to update or later remove this signal.
       required: true
       selector:
@@ -130,7 +130,7 @@ set_accent:
     accent_name:
       name: Accent name
       description: >
-        A unique name identifying this accent within the Signal Light instance.
+        A unique name identifying this accent within the instance.
         Use the same name to update or later remove this accent.
       required: true
       selector:

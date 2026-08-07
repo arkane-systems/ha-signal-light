@@ -1,9 +1,9 @@
 {
   "domain": "signal_light",
-  "name": "Signal Light",
+  "name": "Accent & Signal Light",
   "version": "0.1.6",
-  "documentation": "https://github.com/arkane-systems/ha-signal-light",
-  "issue_tracker": "https://github.com/arkane-systems/ha-signal-light/issues",
+  "documentation": "https://github.com/arkane-systems/ha-accent-signal-light",
+  "issue_tracker": "https://github.com/arkane-systems/ha-accent-signal-light/issues",
   "dependencies": [],
   "codeowners": ["@arkane-systems"],
   "requirements": [],

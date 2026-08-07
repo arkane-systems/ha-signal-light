@@ -1,4 +1,4 @@
-"""Coordinator for the Signal Light integration.
+"""Coordinator for the Accent & Signal Light integration.
 
 This module implements :class:`SignalLightCoordinator`, which is the central
 object for a single signal-light *instance* (one config entry).  It owns the

@@ -1,21 +1,21 @@
-"""Config flow for the Signal Light integration.
+"""Config flow for the Accent & Signal Light integration.
 
-Guides the user through adding a new Signal Light instance via the HA
-integrations UI.  The flow collects two pieces of information:
+Guides the user through adding a new instance via the HA integrations UI.
+The flow collects two pieces of information:
 
-1. **Name** — a human-readable label for this signal-light instance (e.g.
-   "Living Room Signal Light").  Defaults to the domain name; the user is free
+1. **Name** — a human-readable label for this instance (e.g. "Living Room
+   Accent & Signal Light").  Defaults to the domain name; the user is free
    to change it.
 
 2. **Underlying light entity** — the ``entity_id`` of the physical light (or
-   light group) that Signal Light will control.
+   light group) that this instance will control.
 
 Validation
 ----------
 * The supplied entity_id must belong to a currently-loaded entity in the
   ``light`` domain.
 * Duplicate entries for the same underlying entity are rejected; only one
-  Signal Light instance may manage a given physical light.
+  instance may manage a given physical light.
 """
 
 from __future__ import annotations
@@ -60,7 +60,7 @@ def _existing_underlying_ids(hass: HomeAssistant) -> set[str]:
 
 
 class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Config flow for Signal Light.
+    """Config flow for Accent & Signal Light.
 
     Presents a single form that collects the name and underlying entity_id,
     then creates the config entry.
@@ -97,7 +97,7 @@ class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
             if entity_id not in light_entity_ids:
                 errors[CONF_UNDERLYING_ENTITY_ID] = "entity_not_found"
 
-            # 2. No other Signal Light instance already controls this entity.
+            # 2. No other instance already controls this entity.
             elif entity_id in _existing_underlying_ids(self.hass):
                 errors[CONF_UNDERLYING_ENTITY_ID] = "already_configured"
 
@@ -109,7 +109,7 @@ class SignalLightConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 _LOGGER.debug(
-                    "Creating Signal Light entry: name=%r entity=%r",
+                    "Creating Accent & Signal Light entry: name=%r entity=%r",
                     user_input.get("name"), entity_id,
                 )
                 return self.async_create_entry(

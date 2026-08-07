@@ -1,4 +1,4 @@
-"""Sensor entities for the Signal Light integration.
+"""Sensor entities for the Accent & Signal Light integration.
 
 This module provides four read-only sensor entities that give visibility into
 the current state of the accent stack and signal queue for a given
@@ -87,7 +87,7 @@ async def async_setup_entry(
 
 
 class _SignalLightSensorBase(SensorEntity):
-    """Common base for all Signal Light sensors.
+    """Common base for all Accent & Signal Light sensors.
 
     Handles coordinator subscription/unsubscription and device info, so
     subclasses only need to implement the state-specific properties.
@@ -120,8 +120,8 @@ class _SignalLightSensorBase(SensorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
             name=config_entry.title,
-            manufacturer="Signal Light",
-            model="Signal Light Controller",
+            manufacturer="Accent & Signal Light",
+            model="Accent & Signal Light Controller",
         )
 
         self._remove_listener: Any = None

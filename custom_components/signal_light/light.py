@@ -1,4 +1,4 @@
-"""Base-layer light entity for the Signal Light integration.
+"""Base-layer light entity for the Accent & Signal Light integration.
 
 The *base layer* is the lowest-priority tier of the three-layer model.  It is
 exposed to Home Assistant as a standard ``light`` entity so that users,
@@ -252,8 +252,8 @@ class SignalBaseLight(LightEntity, RestoreEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, config_entry.entry_id)},
             name=config_entry.title,
-            manufacturer="Signal Light",
-            model="Signal Light Controller",
+            manufacturer="Accent & Signal Light",
+            model="Accent & Signal Light Controller",
             entry_type=None,
         )
 

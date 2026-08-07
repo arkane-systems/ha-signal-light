@@ -1,4 +1,4 @@
-"""Home Assistant integration setup for Signal Light.
+"""Home Assistant integration setup for Accent & Signal Light.
 
 This module contains the two entry-points that HA calls when managing a config
 entry for this integration:
@@ -169,7 +169,7 @@ CLEAR_ACCENT_SCHEMA = vol.Schema(
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up a Signal Light instance from a config entry.
+    """Set up an Accent & Signal Light instance from a config entry.
 
     Creates the :class:`~signal_light.coordinator.SignalLightCoordinator` for
     this entry, stores it in ``hass.data``, and forwards setup to all
@@ -194,12 +194,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry, [Platform.LIGHT, Platform.SENSOR]
     )
 
-    _LOGGER.debug("Signal Light entry loaded: %s", entry.entry_id)
+    _LOGGER.debug("Accent & Signal Light entry loaded: %s", entry.entry_id)
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a Signal Light config entry.
+    """Unload an Accent & Signal Light config entry.
 
     Unloads all platforms and removes the coordinator from ``hass.data``.
 
@@ -221,5 +221,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await coordinator.async_shutdown()
         hass.data[DOMAIN].pop(entry.entry_id, None)
 
-    _LOGGER.debug("Signal Light entry unloaded: %s (ok=%s)", entry.entry_id, unload_ok)
+    _LOGGER.debug("Accent & Signal Light entry unloaded: %s (ok=%s)", entry.entry_id, unload_ok)
     return unload_ok

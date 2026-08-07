@@ -1,6 +1,6 @@
-# Copilot Instructions for Signal Light
+# Copilot Instructions for Accent & Signal Light
 
-Signal Light is a Home Assistant custom integration that manages accent and notification lights using a three-layer priority model (signal, accent, base).
+Accent & Signal Light is a Home Assistant custom integration that manages accent and notification lights using a three-layer priority model (signal, accent, base). It was originally published as "Signal Light"; the display name and repo were renamed to avoid confusion with an unrelated, similarly-named integration, but the domain (`signal_light`), entity IDs, and service names were deliberately left unchanged to avoid breaking existing installations.
 
 ## High-level Architecture
 
@@ -20,7 +20,7 @@ State evaluation is top-down: only the highest-priority non-empty layer's state 
 - **Light Entity** (`light.py`) — Exposes the base layer as a standard HA light for user/automation control. Extends `RestoreEntity` for state persistence.
 - **Sensor Entities** (`sensor.py`) — Four sensors reporting active signal/accent names and queue/stack contents.
 - **Services** (via `__init__.py`) — Domain services `set_signal`, `clear_signal`, `set_accent`, `clear_accent` registered as entity services on the light platform.
-- **Config Flow** (`config_flow.py`) — UI setup for creating Signal Light instances.
+- **Config Flow** (`config_flow.py`) — UI setup for creating Accent & Signal Light instances.
 
 ### Domain
 
@@ -97,7 +97,7 @@ Before calling `light.turn_on`, attributes are normalized so only one color desc
 
 ### Entity IDs and Suffixes
 
-For a Signal Light named "Living Room", the integration creates:
+For an Accent & Signal Light instance named "Living Room", the integration creates:
 - `light.living_room_base` — Base-layer light entity
 - `sensor.living_room_active_signal` — Current signal name
 - `sensor.living_room_active_accent` — Current accent name

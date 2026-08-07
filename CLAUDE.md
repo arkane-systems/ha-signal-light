@@ -4,10 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Signal Light is a Home Assistant custom integration (`custom_components/signal_light/`) that manages
-accent and notification lights using a three-layer priority model, avoiding the need for bookkeeping
-automations that track "which automation last changed this light." Domain: `signal_light`. Platforms:
-`light`, `sensor`. No external dependencies beyond Home Assistant core.
+Accent & Signal Light is a Home Assistant custom integration (`custom_components/signal_light/`) that
+manages accent and notification lights using a three-layer priority model, avoiding the need for
+bookkeeping automations that track "which automation last changed this light." Domain: `signal_light`
+(unchanged from the integration's original name — see below). Platforms: `light`, `sensor`. No external
+dependencies beyond Home Assistant core.
+
+The integration was originally published as "Signal Light" but renamed to "Accent & Signal Light" to
+avoid confusion with an unrelated, similarly-named existing integration. Only the display name and the
+GitHub repo (`ha-accent-signal-light`) changed — the domain, entity IDs, service names, and all
+`hass.data`/config-entry internals deliberately still use `signal_light`, since changing the domain
+would break every existing installation's config entries, entity registry, and automations (see git
+history for the rejected alternative). Don't "finish the rename" by touching the domain.
 
 ## Development workflow
 
