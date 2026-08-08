@@ -1,0 +1,4 @@
+pytest==9.0.0
+pytest-asyncio==1.3.0
+pytest-homeassistant-custom-component==0.13.316
+homeassistant==2026.2.3
