@@ -48,6 +48,7 @@ from typing import Any, Callable
 from homeassistant.components.light import (
     ATTR_COLOR_NAME,
     ATTR_COLOR_TEMP_KELVIN,
+    ATTR_EFFECT,
     ATTR_HS_COLOR,
     ATTR_RGB_COLOR,
     ATTR_RGBW_COLOR,
@@ -226,6 +227,10 @@ class SignalLightCoordinator:
         if any(attr in attrs for attr in _COLOR_DESCRIPTOR_ATTRS):
             for attr in _COLOR_DESCRIPTOR_ATTRS:
                 self._base_attrs.pop(attr, None)
+            # A manually-chosen colour implicitly cancels any active effect,
+            # unless the caller explicitly set a new effect in the same call.
+            if ATTR_EFFECT not in attrs:
+                self._base_attrs.pop(ATTR_EFFECT, None)
         self._base_attrs.update(attrs)
         _LOGGER.debug("Base layer on: %s", self._base_attrs)
         await self._async_apply_state()
