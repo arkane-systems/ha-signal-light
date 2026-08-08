@@ -1,12 +1,12 @@
 {
   "domain": "signal_light",
   "name": "Accent & Signal Light",
-  "version": "0.2.2",
-  "documentation": "https://github.com/arkane-systems/ha-accent-signal-light",
-  "issue_tracker": "https://github.com/arkane-systems/ha-accent-signal-light/issues",
-  "dependencies": [],
   "codeowners": ["@arkane-systems"],
-  "requirements": [],
-  "iot_class": "local_push",
   "config_flow": true
+  "dependencies": [],
+  "documentation": "https://github.com/arkane-systems/ha-accent-signal-light",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/arkane-systems/ha-accent-signal-light/issues",
+  "requirements": [],
+  "version": "0.2.2"
 }
